@@ -32,6 +32,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
-
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        
+        AppDelegate.importDataSourceFromShared(url: url)
+        
+        return true
+    }
+    
+    public static func importDataSourceFromShared(url: URL) {
+        if let importedUsers = ExportableContainer<User>.importDataSource(at: url) {
+            print("Imported users: \(importedUsers)")
+        }
+    }
 }
 

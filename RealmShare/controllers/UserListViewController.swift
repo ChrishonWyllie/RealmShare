@@ -1,13 +1,13 @@
 //
 //  UserListViewController.swift
-//  ClubKit_Example
+//  RealmShare
 //
-//  Created by Chrishon Wyllie on 5/26/20.
-//  Copyright © 2020 CocoaPods. All rights reserved.
+//  Created by Chrishon Wyllie on 6/26/20.
+//  Copyright © 2020 Chrishon Wyllie. All rights reserved.
 //
 
 import UIKit
-import ClubKit
+import RealmSwift
 
 class UserListViewController: UIViewController {
     
@@ -15,7 +15,8 @@ class UserListViewController: UIViewController {
     
     private let cellReuseIdentifier = "cellReuseIdentifier"
     
-    private let usersCollection = MembershipUserCollection<CustomMembershipUser>()
+    private var users: Results<User>!
+    private var usersToken: NotificationToken?
     
     
     // MARK: - UI Elements
@@ -61,7 +62,7 @@ class UserListViewController: UIViewController {
     }
     
     private lazy var exportAllButton: UIBarButtonItem = {
-        let btn = UIBarButtonItem(title: "Export", style: UIBarButtonItemStyle.plain, target: self, action: #selector(showExportSheetController))
+        let btn = UIBarButtonItem(title: "Export", style: UIBarButtonItem.Style.plain, target: self, action: #selector(showExportSheetController))
         return btn
     }()
     
@@ -75,21 +76,13 @@ class UserListViewController: UIViewController {
         let alertController = UIAlertController(title: "Export",
                                                 message: "Choose export file",
                                                 preferredStyle: alertStyle)
-        let userListFileAction = UIAlertAction(title: "User List", style: UIAlertActionStyle.default) { (_) in
-            guard
-                let exportableURL = Club.shared.getExportableURLForDataSource(ofType: CustomMembershipUser.self, fileType: .userList)
-                else {
-                return
-            }
+        let userListFileAction = UIAlertAction(title: "User List", style: UIAlertAction.Style.default) { (_) in
+            let exportableURL = ExportableContainer<User>().convertDataSourceToUserListFile()!
             
             self.showShareController(with: exportableURL)
         }
-        let csvFileAction = UIAlertAction(title: "CSV", style: UIAlertActionStyle.default) { (_) in
-            guard
-                let exportableURL = Club.shared.getExportableURLForDataSource(ofType: CustomMembershipUser.self, fileType: .csv)
-                else {
-                return
-            }
+        let csvFileAction = UIAlertAction(title: "CSV", style: UIAlertAction.Style.default) { (_) in
+            let exportableURL = ExportableContainer<User>().convertDataSourceToCSVFile()!
             
             self.showShareController(with: exportableURL)
         }
@@ -123,10 +116,20 @@ class UserListViewController: UIViewController {
         // Freezes the UI for atleast 2 full minutes
         // but otherwise, completes without crashing
         // There is no reason to do this more than once
-        Array(0..<10000).forEach { (num) in
-            let captureDataString = "4|\(UUID().uuidString)|whatever|username_\(num)"
-            let newUserInfoformation = CaptureDataInformation(captureDataString: captureDataString)!
-            Club.shared.createUser(with: newUserInfoformation)
+        Array(0..<10).forEach { (num) in
+            let user = User()
+            user.userId = UUID().uuidString
+            user.fullName = "Some name"
+            user.numCoffees = 0
+            
+            do {
+                let realm = try Realm()
+                try realm.write {
+                    realm.add(user)
+                }
+            } catch let error {
+                print("Error writing to Realm: \(error)")
+            }
         }
     }
     
@@ -139,7 +142,6 @@ class UserListViewController: UIViewController {
             exportAllButton,
             editButtonItem
         ]
-        self.editButtonItem.tintColor = Constants.ClassicSwiftConstants.AppTheme.primaryColor
         view.backgroundColor = UIColor.systemBackground
         
         view.addSubview(numUsersLabel)
@@ -160,8 +162,9 @@ class UserListViewController: UIViewController {
     }
     
     private func loadAllRecords() {
-        
-        usersCollection.observeAllRecords({ [weak self] (changes: MembershipUserChanges) in
+        let realm = try! Realm()
+        users = realm.objects(User.self)
+        usersToken = users.observe({ [weak self] (changes) in
             guard let strongSelf = self else { return }
             
             switch changes {
@@ -198,7 +201,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let numRows = usersCollection.users.count
+        let numRows = users.count
         numUsersLabel.text = "Num users: \(numRows)"
         return numRows
     }
@@ -206,7 +209,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier, for: indexPath) as? UserCell
         
-        let user = usersCollection.users[indexPath.item]
+        let user = users[indexPath.item]
         cell?.setup(with: user)
         
         return cell!
@@ -217,14 +220,14 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .none
     }
     
@@ -233,7 +236,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         let updateTitle = "Update Email"
         let updateAction = UIContextualAction(style: .normal, title: updateTitle, handler: { [weak self] (action, view, completionHandler) in
             guard let strongSelf = self else { return }
-            let user = strongSelf.usersCollection.users[indexPath.item]
+            let user = strongSelf.users[indexPath.item]
             
             strongSelf.showAlertForUpdating(user: user)
             
@@ -243,7 +246,7 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         let deleteTitle = "Delete"
         let deleteAction = UIContextualAction(style: .destructive, title: deleteTitle, handler: { [weak self] (action, view, completionHandler) in
             guard let strongSelf = self else { return }
-            let user = strongSelf.usersCollection.users[indexPath.item]
+            let user = strongSelf.users[indexPath.item]
             
             strongSelf.showAlertForDeleting(user: user)
             completionHandler(true)
@@ -253,21 +256,18 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         return configuration
     }
     
-    private func showAlertForUpdating(user: CustomMembershipUser) {
+    private func showAlertForUpdating(user: User) {
         
         let alertController = UIAlertController(title: "Update Email Address",
-                                                message: "Provide new email address for \(user.username!)",
+                                                message: "Provide new email address for \(user.fullName!)",
                                                 preferredStyle: .alert)
         alertController.addTextField()
 
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         let submitAction = UIAlertAction(title: "Confirm", style: .default) { [unowned alertController] _ in
             
-            if let newEmailAddress = alertController.textFields?.first?.text {
-                
-                Club.shared.update(user: user) {
-                    user.emailAddress = newEmailAddress
-                }
+            if let textField = alertController.textFields?.first {
+                // Do something with text
             }
             
         }
@@ -278,11 +278,11 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
         present(alertController, animated: true)
     }
     
-    private func showAlertForDeleting(user: CustomMembershipUser) {
+    private func showAlertForDeleting(user: User) {
         
         let title = "Are you sure you want to delete this user?"
         let message = "This is a permanent action and cannot be reversed"
-        let style = UIAlertControllerStyle.alert
+        let style = UIAlertController.Style.alert
         
         
         
@@ -290,12 +290,13 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
                                                 message: message,
                                                 preferredStyle: style)
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel) { (_) in
+        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertAction.Style.cancel) { (_) in
             alertController.dismiss(animated: true, completion: nil)
         }
         
-        let deleteAction = UIAlertAction(title: "Delete", style: UIAlertActionStyle.destructive) { (_) in
-            Club.shared.deleteUser(user)
+        let deleteAction = UIAlertAction(title: "Delete", style: UIAlertAction.Style.destructive) { (_) in
+            let realm = try! Realm()
+            realm.delete(user)
         }
         
         alertController.addAction(cancelAction)

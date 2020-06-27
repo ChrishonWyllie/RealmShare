@@ -20,6 +20,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
         // Create the SwiftUI view that provides the window contents.
+        setupUILayoutWithClassicSwift(using: scene)
+    }
+    
+    private func setupUILayoutWithClassicSwift(using scene: UIScene) {
+        if let windowScene = scene as? UIWindowScene {
+            let window = UIWindow(windowScene: windowScene)
+            
+            let controller = UserListViewController()
+            let navigationController = UINavigationController(rootViewController: controller)
+            
+            window.rootViewController = navigationController
+            self.window = window
+            window.makeKeyAndVisible()
+        }
+    }
+
+    private func setupUILayoutWithSwiftUI(using scene: UIScene) {
         let contentView = ContentView()
 
         // Use a UIHostingController as window root view controller.
@@ -30,7 +47,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.makeKeyAndVisible()
         }
     }
-
+    
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
         // This occurs shortly after the scene enters the background, or when its session is discarded.
@@ -59,6 +76,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        if let url = URLContexts.first?.url {
+            AppDelegate.importDataSourceFromShared(url: url)
+        }
+    }
 
 }
 

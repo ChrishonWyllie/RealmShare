@@ -1,13 +1,12 @@
 //
 //  UserCell.swift
-//  ClubKit_Example
+//  RealmShare
 //
-//  Created by Chrishon Wyllie on 5/22/20.
-//  Copyright © 2020 CocoaPods. All rights reserved.
+//  Created by Chrishon Wyllie on 6/26/20.
+//  Copyright © 2020 Chrishon Wyllie. All rights reserved.
 //
 
 import UIKit
-import ClubKit
 
 class UserCell: UITableViewCell {
     
@@ -32,13 +31,10 @@ class UserCell: UITableViewCell {
     
     private var usernameInfoStackView = InfoStackView()
     private var userIdInfoStackView = InfoStackView()
-    private var userCreationInfoStackView = InfoStackView()
-    private var userLastVisitInfoStackView = InfoStackView()
     private var userNumVisitsInfoStackView = InfoStackView()
-    private var emailAddressInfoStackView = InfoStackView()
     
     private lazy var containerStackView: UIStackView = {
-        let sv = UIStackView(arrangedSubviews: [usernameInfoStackView, userIdInfoStackView, userCreationInfoStackView, userLastVisitInfoStackView, userNumVisitsInfoStackView, emailAddressInfoStackView])
+        let sv = UIStackView(arrangedSubviews: [usernameInfoStackView, userIdInfoStackView, userNumVisitsInfoStackView])
         sv.translatesAutoresizingMaskIntoConstraints = false
         sv.axis = .vertical
         sv.alignment = .leading
@@ -51,9 +47,9 @@ class UserCell: UITableViewCell {
         v.translatesAutoresizingMaskIntoConstraints = false
         v.clipsToBounds = true
         v.backgroundColor = UIColor.systemBackground
-        v.layer.cornerRadius = Constants.UIFormat.roundedCornerRadius
-        v.layer.borderWidth = Constants.UIFormat.roundedBorderWidth
-        v.layer.borderColor = Constants.ClassicSwiftConstants.AppTheme.primaryColor.cgColor
+        v.layer.cornerRadius = 15
+        v.layer.borderWidth = 2
+        v.layer.borderColor = UIColor.systemRed.cgColor
         
         return v
     }()
@@ -63,7 +59,7 @@ class UserCell: UITableViewCell {
     
     // MARK: - Initializers
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         setupUIElements()
@@ -99,24 +95,10 @@ class UserCell: UITableViewCell {
         containerStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -paddingConstant).isActive = true
     }
     
-    public func setup(with user: CustomMembershipUser) {
-        usernameInfoStackView.setText(title: "User name:", secondary: user.username)
+    public func setup(with user: User) {
+        usernameInfoStackView.setText(title: "User name:", secondary: user.fullName)
         userIdInfoStackView.setText(title: "User Unique Id:", secondary: user.userId)
-        
-        
-        
-        
-        let creationDate = Date(timeIntervalSince1970: user.timeStampAdded)
-        let creationDateAsString = dateFormatter.string(from: creationDate)
-        userCreationInfoStackView.setText(title: "Date Added:", secondary: creationDateAsString)
-        
-        let lastVisitDate = Date(timeIntervalSince1970: user.timeStampOfLastVisit)
-        let lastVisitDateAsString = dateFormatter.string(from: lastVisitDate)
-        userLastVisitInfoStackView.setText(title: "Date of last visit:", secondary: lastVisitDateAsString)
-        
-        userNumVisitsInfoStackView.setText(title: "Number of visits:", secondary: String(describing: user.numVisits))
-        
-        emailAddressInfoStackView.setText(title: "Email Address", secondary: user.emailAddress)
+        userNumVisitsInfoStackView.setText(title: "Number of visits:", secondary: String(describing: user.numCoffees))
     }
     
 }

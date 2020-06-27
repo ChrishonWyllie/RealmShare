@@ -1,9 +1,9 @@
 //
 //  InfoStackView.swift
-//  ClubKit_Example
+//  RealmShare
 //
-//  Created by Chrishon Wyllie on 5/22/20.
-//  Copyright © 2020 CocoaPods. All rights reserved.
+//  Created by Chrishon Wyllie on 6/26/20.
+//  Copyright © 2020 Chrishon Wyllie. All rights reserved.
 //
 
 import UIKit
@@ -29,7 +29,7 @@ class InfoStackView: UIView {
         let sv = UIStackView(arrangedSubviews: [titleLabel, secondaryLabel])
         sv.translatesAutoresizingMaskIntoConstraints = false
         sv.axis = .vertical
-        sv.alignment = UIStackViewAlignment.leading
+        sv.alignment = UIStackView.Alignment.leading
         sv.spacing = 6
         return sv
     }()
@@ -88,7 +88,7 @@ class UnderlinedLabel: UILabel {
             attributedText.addAttributes([
                 NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 20),
                 NSAttributedString.Key.foregroundColor : UIColor.darkGray,
-                NSAttributedString.Key.underlineStyle : NSUnderlineStyle.styleSingle.rawValue
+                NSAttributedString.Key.underlineStyle : NSUnderlineStyle.single.rawValue
             ],
                                          range: textRange)
             self.attributedText = attributedText
