@@ -61,6 +61,11 @@ class UserListViewController: UIViewController {
         tableView.setEditing(editing, animated: true)
     }
     
+    private lazy var addUsersButton: UIBarButtonItem = {
+        let btn = UIBarButtonItem(title: "Add Users", style: UIBarButtonItem.Style.plain, target: self, action: #selector(stressTestAddingManyUsers))
+        return btn
+    }()
+    
     private lazy var exportAllButton: UIBarButtonItem = {
         let btn = UIBarButtonItem(title: "Export", style: UIBarButtonItem.Style.plain, target: self, action: #selector(showExportSheetController))
         return btn
@@ -110,7 +115,7 @@ class UserListViewController: UIViewController {
         present(activityController, animated: true, completion: nil)
     }
     
-    private func stressTestAddingManyUsers() {
+    @objc private func stressTestAddingManyUsers() {
         // Creates 10,000 users
         // NOTE
         // Freezes the UI for atleast 2 full minutes
@@ -140,7 +145,7 @@ class UserListViewController: UIViewController {
         // right to left
         navigationItem.rightBarButtonItems = [
             exportAllButton,
-            editButtonItem
+            addUsersButton
         ]
         view.backgroundColor = UIColor.systemBackground
         
