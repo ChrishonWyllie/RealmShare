@@ -79,6 +79,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6656141124A6EA5D00A4B690 /* ClassicSwift */ = {
+			isa = PBXGroup;
+			children = (
+				66B3467A24A6B3DC00E16B40 /* views */,
+				66B3467724A6B3DC00E16B40 /* controllers */,
+			);
+			path = ClassicSwift;
+			sourceTree = "<group>";
+		};
+		6656141224A6EA6900A4B690 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				665BB9CA24A693550004F319 /* ContentView.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
 		665BB9BA24A693550004F319 = {
 			isa = PBXGroup;
 			children = (
@@ -103,11 +120,10 @@
 			isa = PBXGroup;
 			children = (
 				665BB9E824A697350004F319 /* models */,
-				66B3467A24A6B3DC00E16B40 /* views */,
-				66B3467724A6B3DC00E16B40 /* controllers */,
+				6656141124A6EA5D00A4B690 /* ClassicSwift */,
 				665BB9C624A693550004F319 /* AppDelegate.swift */,
 				665BB9C824A693550004F319 /* SceneDelegate.swift */,
-				665BB9CA24A693550004F319 /* ContentView.swift */,
+				6656141224A6EA6900A4B690 /* SwiftUI */,
 				665BB9CC24A693590004F319 /* Assets.xcassets */,
 				665BB9D124A693590004F319 /* LaunchScreen.storyboard */,
 				665BB9D424A693590004F319 /* Info.plist */,
