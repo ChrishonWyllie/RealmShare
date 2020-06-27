@@ -190,6 +190,33 @@ class UserListViewController: UIViewController {
             
         })
     }
+    
+    public func receiveImported(users: [User]) {
+        var alertStyle = UIAlertController.Style.actionSheet
+        if (UIDevice.current.userInterfaceIdiom == .pad) {
+            alertStyle = UIAlertController.Style.alert
+        }
+        
+        let alertController = UIAlertController(title: "Import",
+                                                message: "Received \(users.count) users to import. Would you like to save them?",
+                                                preferredStyle: alertStyle)
+        let yesAction = UIAlertAction(title: "Yes", style: UIAlertAction.Style.default) { (_) in
+            let realm = try! Realm()
+            for user in users {
+                try! realm.write {
+                    realm.add(user)
+                }
+            }
+        }
+        let noAction = UIAlertAction(title: "No", style: UIAlertAction.Style.cancel) { (_) in
+            
+        }
+        
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+        
+        present(alertController, animated: true, completion: nil)
+    }
 }
 
 
@@ -263,8 +290,8 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     
     private func showAlertForUpdating(user: User) {
         
-        let alertController = UIAlertController(title: "Update Email Address",
-                                                message: "Provide new email address for \(user.fullName!)",
+        let alertController = UIAlertController(title: "Update name",
+                                                message: "Provide new name for \(user.fullName!)",
                                                 preferredStyle: .alert)
         alertController.addTextField()
 
@@ -273,6 +300,13 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
             
             if let textField = alertController.textFields?.first {
                 // Do something with text
+                
+                if let newName = textField.text, newName.count > 0 {
+                    let realm = try! Realm()
+                    try! realm.write {
+                        user.fullName = newName
+                    }
+                }
             }
             
         }
