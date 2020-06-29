@@ -61,6 +61,11 @@ class UserListViewController: UIViewController {
         tableView.setEditing(editing, animated: true)
     }
     
+    private lazy var addUsersButton: UIBarButtonItem = {
+        let btn = UIBarButtonItem(title: "Add Users", style: UIBarButtonItem.Style.plain, target: self, action: #selector(stressTestAddingManyUsers))
+        return btn
+    }()
+    
     private lazy var exportAllButton: UIBarButtonItem = {
         let btn = UIBarButtonItem(title: "Export", style: UIBarButtonItem.Style.plain, target: self, action: #selector(showExportSheetController))
         return btn
@@ -110,7 +115,7 @@ class UserListViewController: UIViewController {
         present(activityController, animated: true, completion: nil)
     }
     
-    private func stressTestAddingManyUsers() {
+    @objc private func stressTestAddingManyUsers() {
         // Creates 10,000 users
         // NOTE
         // Freezes the UI for atleast 2 full minutes
@@ -120,12 +125,11 @@ class UserListViewController: UIViewController {
             let user = User()
             user.userId = UUID().uuidString
             user.fullName = "Some name"
-            user.numCoffees = 0
             
             do {
                 let realm = try Realm()
                 try realm.write {
-                    realm.add(user)
+                    realm.add(user, update: Realm.UpdatePolicy.modified)
                 }
             } catch let error {
                 print("Error writing to Realm: \(error)")
@@ -140,7 +144,7 @@ class UserListViewController: UIViewController {
         // right to left
         navigationItem.rightBarButtonItems = [
             exportAllButton,
-            editButtonItem
+            addUsersButton
         ]
         view.backgroundColor = UIColor.systemBackground
         
@@ -184,6 +188,33 @@ class UserListViewController: UIViewController {
             }
             
         })
+    }
+    
+    public func receiveImported(users: [User]) {
+        var alertStyle = UIAlertController.Style.actionSheet
+        if (UIDevice.current.userInterfaceIdiom == .pad) {
+            alertStyle = UIAlertController.Style.alert
+        }
+        
+        let alertController = UIAlertController(title: "Import",
+                                                message: "Received \(users.count) users to import. Would you like to save them?",
+                                                preferredStyle: alertStyle)
+        let yesAction = UIAlertAction(title: "Yes", style: UIAlertAction.Style.default) { (_) in
+            let realm = try! Realm()
+            for user in users {
+                try! realm.write {
+                    realm.add(user, update: Realm.UpdatePolicy.modified)
+                }
+            }
+        }
+        let noAction = UIAlertAction(title: "No", style: UIAlertAction.Style.cancel) { (_) in
+            
+        }
+        
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+        
+        present(alertController, animated: true, completion: nil)
     }
 }
 
@@ -258,8 +289,8 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
     
     private func showAlertForUpdating(user: User) {
         
-        let alertController = UIAlertController(title: "Update Email Address",
-                                                message: "Provide new email address for \(user.fullName!)",
+        let alertController = UIAlertController(title: "Update name",
+                                                message: "Provide new name for \(user.fullName!)",
                                                 preferredStyle: .alert)
         alertController.addTextField()
 
@@ -268,6 +299,13 @@ extension UserListViewController: UITableViewDelegate, UITableViewDataSource {
             
             if let textField = alertController.textFields?.first {
                 // Do something with text
+                
+                if let newName = textField.text, newName.count > 0 {
+                    let realm = try! Realm()
+                    try! realm.write {
+                        user.fullName = newName
+                    }
+                }
             }
             
         }

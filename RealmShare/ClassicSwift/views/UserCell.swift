@@ -48,9 +48,7 @@ class UserCell: UITableViewCell {
         v.clipsToBounds = true
         v.backgroundColor = UIColor.systemBackground
         v.layer.cornerRadius = 15
-        v.layer.borderWidth = 2
-        v.layer.borderColor = UIColor.systemRed.cgColor
-        
+        v.backgroundColor = UIColor.systemRed
         return v
     }()
     
@@ -98,7 +96,6 @@ class UserCell: UITableViewCell {
     public func setup(with user: User) {
         usernameInfoStackView.setText(title: "User name:", secondary: user.fullName)
         userIdInfoStackView.setText(title: "User Unique Id:", secondary: user.userId)
-        userNumVisitsInfoStackView.setText(title: "Number of visits:", secondary: String(describing: user.numCoffees))
     }
     
 }

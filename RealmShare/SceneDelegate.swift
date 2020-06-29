@@ -21,6 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         setupUILayoutWithClassicSwift(using: scene)
+//        setupUILayoutWithSwiftUI(using: scene)
     }
     
     private func setupUILayoutWithClassicSwift(using scene: UIScene) {
@@ -78,7 +79,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
-            AppDelegate.importDataSourceFromShared(url: url)
+            
+            guard let importedUsers: [User] = ExportableContainer<User>.importDataSource(at: url) else {
+                return
+            }
+            
+            guard
+                let navigationController = window?.rootViewController as? UINavigationController,
+                let userListController = navigationController.viewControllers.first as? UserListViewController
+            else {
+                return
+            }
+            
+            userListController.receiveImported(users: importedUsers)
         }
     }
 
