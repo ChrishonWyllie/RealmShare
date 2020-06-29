@@ -22,6 +22,7 @@ class InfoStackView: UIView {
         let lbl = UILabel()
         lbl.translatesAutoresizingMaskIntoConstraints = false
         lbl.font = UIFont.systemFont(ofSize: 15)
+        lbl.textColor = .white
         return lbl
     }()
     
@@ -87,7 +88,7 @@ class UnderlinedLabel: UILabel {
             let attributedText = NSMutableAttributedString(string: text)
             attributedText.addAttributes([
                 NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 20),
-                NSAttributedString.Key.foregroundColor : UIColor.darkGray,
+                NSAttributedString.Key.foregroundColor : UIColor.white,
                 NSAttributedString.Key.underlineStyle : NSUnderlineStyle.single.rawValue
             ],
                                          range: textRange)

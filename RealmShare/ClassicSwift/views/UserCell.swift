@@ -96,7 +96,6 @@ class UserCell: UITableViewCell {
     public func setup(with user: User) {
         usernameInfoStackView.setText(title: "User name:", secondary: user.fullName)
         userIdInfoStackView.setText(title: "User Unique Id:", secondary: user.userId)
-        userNumVisitsInfoStackView.setText(title: "Number of coffees:", secondary: String(describing: user.numCoffees))
     }
     
 }

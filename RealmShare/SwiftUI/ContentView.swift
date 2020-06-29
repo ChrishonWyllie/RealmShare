@@ -11,7 +11,6 @@ import RealmSwift
 
 struct ContentView: View {
     
-    @State private var isAlert = false
     @State var showSheet = false
     
     var body: some View {
@@ -19,22 +18,16 @@ struct ContentView: View {
             UserListView()
             .navigationBarItems(trailing:
                 HStack {
-                    Button("Share") {
-                        self.isAlert.toggle()
-                    }.alert(isPresented: $isAlert) { () -> Alert in
-                        Alert(title: Text("Export").font(.title),
-                              message: Text("Choose export file").font(.subheadline),
-                              primaryButton: .default(Text("User List"), action: {
-                                
-                                
-                                
-                                let exportable = ExportableContainer<User>()
-                                let url = exportable.convertDataSourceToUserListFile()!
-                                let activityViewController = SwiftUIActivityViewController()
-                                activityViewController.share(url: url)
-                                
-                              }),
-                              secondaryButton: .default(Text("CSV")))
+                    Button("Share CSV") {
+                        self.showSheet.toggle()
+                    }.sheet(isPresented: $showSheet) {
+                        ShareSheet(activityItems: [ExportableContainer<User>().convertDataSourceToCSVFile()!])
+                    }
+                    
+                    Button("Share User List") {
+                        self.showSheet.toggle()
+                    }.sheet(isPresented: $showSheet) {
+                        ShareSheet(activityItems: [ExportableContainer<User>().convertDataSourceToUserListFile()!])
                     }
 
                     Button("Add") {
@@ -42,7 +35,6 @@ struct ContentView: View {
                             let user = User()
                             user.userId = UUID().uuidString
                             user.fullName = "Some name"
-                            user.numCoffees = 0
                             
                             do {
                                 let realm = try Realm()
@@ -99,8 +91,7 @@ struct UserListCell: View {
         VStack (alignment: .leading) {
             Text(user.userId ?? "")
             Text(user.fullName ?? "")
-            Text("\(user.numCoffees)")
-        }
+        }.foregroundColor(.red)
     }
 }
 
@@ -117,48 +108,6 @@ struct UserListCell: View {
 
 
 
-
-class ActivityViewController : UIViewController {
-
-    var url: URL!
-
-    @objc func share() {
-        let activityItems: [Any] = [url!]
-        let activityController = UIActivityViewController(activityItems: activityItems, applicationActivities: [])
-        
-        activityController.excludedActivityTypes =  [
-            UIActivity.ActivityType.postToWeibo,
-            UIActivity.ActivityType.assignToContact,
-            UIActivity.ActivityType.addToReadingList,
-            UIActivity.ActivityType.postToVimeo,
-            UIActivity.ActivityType.postToTencentWeibo
-        ]
-        activityController.popoverPresentationController?.sourceView = self.view
-        
-        
-        present(activityController, animated: true, completion: nil)
-        
-    }
-    
-}
-
-
-
-struct SwiftUIActivityViewController : UIViewControllerRepresentable {
-
-    let activityViewController = ActivityViewController()
-
-    func makeUIViewController(context: Context) -> ActivityViewController {
-        activityViewController
-    }
-    func updateUIViewController(_ uiViewController: ActivityViewController, context: Context) {
-        //
-    }
-    func share(url: URL) {
-        activityViewController.url = url
-        activityViewController.share()
-    }
-}
 
 
 struct ShareSheet: UIViewControllerRepresentable {

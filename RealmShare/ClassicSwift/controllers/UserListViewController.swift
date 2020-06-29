@@ -125,12 +125,11 @@ class UserListViewController: UIViewController {
             let user = User()
             user.userId = UUID().uuidString
             user.fullName = "Some name"
-            user.numCoffees = 0
             
             do {
                 let realm = try Realm()
                 try realm.write {
-                    realm.add(user)
+                    realm.add(user, update: Realm.UpdatePolicy.modified)
                 }
             } catch let error {
                 print("Error writing to Realm: \(error)")
@@ -204,7 +203,7 @@ class UserListViewController: UIViewController {
             let realm = try! Realm()
             for user in users {
                 try! realm.write {
-                    realm.add(user)
+                    realm.add(user, update: Realm.UpdatePolicy.modified)
                 }
             }
         }

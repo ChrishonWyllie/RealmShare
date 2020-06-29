@@ -21,6 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         setupUILayoutWithClassicSwift(using: scene)
+//        setupUILayoutWithSwiftUI(using: scene)
     }
     
     private func setupUILayoutWithClassicSwift(using scene: UIScene) {

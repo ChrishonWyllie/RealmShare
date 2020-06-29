@@ -12,7 +12,6 @@ import RealmSwift
  
     dynamic var userId: String?
     dynamic var fullName: String?
-    dynamic var numCoffees: Int = 0
     
     
     override class func primaryKey() -> String? {
@@ -22,7 +21,6 @@ import RealmSwift
     enum CodingKeys: String, CodingKey, CaseIterable {
         case userId
         case fullName
-        case numCoffees 
     }
     
     class func variableNamesAsStrings() -> [String] {
@@ -34,7 +32,6 @@ import RealmSwift
         
         userId = try container.decode(String.self, forKey: .userId)
         fullName = try container.decode(String.self, forKey: .fullName)
-        numCoffees = try container.decode(Int.self, forKey: .numCoffees)
         
         super.init()
     }
@@ -48,6 +45,5 @@ import RealmSwift
         
         try container.encode(userId, forKey: .userId)
         try container.encode(fullName, forKey: .fullName)
-        try container.encode(numCoffees, forKey: .numCoffees)
     }
 }

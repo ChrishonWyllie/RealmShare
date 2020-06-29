@@ -13,7 +13,7 @@ class ExportableContainer<T: User>: Object, Codable {
     
     var users: [T] = []
     
-    typealias UserDictionary = [String: AnyObject]
+    typealias UserDictionary = [String: Any]
     
     enum CodingKeys: String, CodingKey {
         case users
@@ -112,7 +112,7 @@ class ExportableContainer<T: User>: Object, Codable {
             for userObject: UserDictionary in allUsersAsJSONArray {
                 
                 let values: [String] = T.variableNamesAsStrings().map { (dictionaryKey) in
-                    let dictionaryValue: AnyObject? = userObject[dictionaryKey]
+                    let dictionaryValue = userObject[dictionaryKey]
                     return String(describing: dictionaryValue ?? "" as AnyObject)
                 }
                 
@@ -176,6 +176,8 @@ class ExportableContainer<T: User>: Object, Codable {
         switch url.pathExtension {
         case IOFileType.userList.fileExtension:
             return parseImportedUserListFile(at: url)
+        case IOFileType.csv.fileExtension:
+            return parseImportedUserCSVFile(at: url)
         default: return nil
         }
     }
@@ -189,6 +191,82 @@ class ExportableContainer<T: User>: Object, Codable {
             
             return users
             
+        } catch let error {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+    
+    private static func parseImportedUserCSVFile(at url: URL) -> [T]? {
+        guard let csvRows = getCSVRows(from: url) else {
+            return nil
+        }
+        
+        guard let columnNames: [String] = csvRows.first?.components(separatedBy: ",") else {
+            return nil
+        }
+        
+        let userRows: [String] = Array<String>(csvRows[1..<csvRows.count])
+        
+        let arrayOfDictionaries: [UserDictionary] = convertToDictionaryArray(csvLines: userRows, columnNames: columnNames)
+        
+        guard let contentsAsJsonString: String = convertToJSONString(array: arrayOfDictionaries) else {
+            return nil
+        }
+        
+        try? FileManager.default.removeItem(at: url)
+        
+        return getUsersFrom(jsonString: contentsAsJsonString)
+    }
+    
+    private static func getCSVRows(from url: URL) -> [String]? {
+        do {
+            let contents = try String(contentsOf: url, encoding: String.Encoding.utf8)
+            
+            let csvRows: [String] = contents.components(separatedBy: .newlines)
+            
+            return csvRows
+        } catch let error {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+    
+    private static func convertToDictionaryArray(csvLines: [String], columnNames: [String]) -> Array<UserDictionary> {
+        var result = Array<UserDictionary>()
+        
+        for line in csvLines {
+            let fieldValues = line.components(separatedBy: ",")
+            // NOTE
+            // This assumes all the field values (columns) are Strings
+            // This also assumes a sort of "generic" format
+            // If your data contains Integers, Floats, etc, you should
+            // parse them individually
+            // For example, if you know the third column is an integer,
+            // let value = Int(fieldValues[2])
+            let dictionary = Dictionary(zip(columnNames, fieldValues), uniquingKeysWith: { (first, _) in first })
+            result.append(dictionary)
+        }
+        return result
+    }
+    
+    private static func convertToJSONString(array: [UserDictionary]) -> String? {
+        do {
+            let jsonData: Data = try JSONSerialization.data(withJSONObject: array, options: .prettyPrinted)
+            return String(data: jsonData, encoding: String.Encoding.utf8)
+        } catch let error {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+    
+    private static func getUsersFrom(jsonString: String) -> [T]? {
+        guard let importedDataSourceAsData: Data = jsonString.data(using: String.Encoding.utf8) else {
+            return nil
+        }
+        do {
+            let users = try JSONDecoder().decode([T].self, from: importedDataSourceAsData)
+            return users
         } catch let error {
             print(error.localizedDescription)
             return nil
