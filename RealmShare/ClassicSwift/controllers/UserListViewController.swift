@@ -116,11 +116,7 @@ class UserListViewController: UIViewController {
     }
     
     @objc private func stressTestAddingManyUsers() {
-        // Creates 10,000 users
-        // NOTE
-        // Freezes the UI for atleast 2 full minutes
-        // but otherwise, completes without crashing
-        // There is no reason to do this more than once
+        
         Array(0..<10).forEach { (num) in
             let user = User()
             user.userId = UUID().uuidString
@@ -201,10 +197,8 @@ class UserListViewController: UIViewController {
                                                 preferredStyle: alertStyle)
         let yesAction = UIAlertAction(title: "Yes", style: UIAlertAction.Style.default) { (_) in
             let realm = try! Realm()
-            for user in users {
-                try! realm.write {
-                    realm.add(user, update: Realm.UpdatePolicy.modified)
-                }
+            try! realm.write {
+                realm.add(users, update: Realm.UpdatePolicy.modified)
             }
         }
         let noAction = UIAlertAction(title: "No", style: UIAlertAction.Style.cancel) { (_) in

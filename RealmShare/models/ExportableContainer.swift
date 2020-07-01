@@ -28,7 +28,7 @@ class ExportableContainer<T: User>: Object, Codable {
     
     required init() {
         super.init()
-        getSnapshotOfAllUsers()
+        users = getSnapshotOfAllUsers()
     }
     
     func encode(to encoder: Encoder) throws {
@@ -37,14 +37,15 @@ class ExportableContainer<T: User>: Object, Codable {
         try container.encode(users, forKey: .users)
     }
     
-    private func getSnapshotOfAllUsers() {
+    private func getSnapshotOfAllUsers() -> [T] {
+        var allUsers: [T] = []
         do {
             let realm = try Realm()
-            let allUsers = realm.objects(T.self)
-            users = Array<T>(allUsers)
+            allUsers = Array<T>(realm.objects(T.self))
         } catch let error {
             print("Error getting all users: \(error)")
         }
+        return allUsers
     }
     
     
@@ -78,7 +79,7 @@ class ExportableContainer<T: User>: Object, Codable {
         }
     }
     
-    internal func convertDataSourceToCSVFile() -> URL? {
+    func convertDataSourceToCSVFile() -> URL? {
         
         do {
             
@@ -126,7 +127,7 @@ class ExportableContainer<T: User>: Object, Codable {
             return filePath
             
         } catch let error {
-            print("ExportableDataSourceContainer - Error converting data source to CSV: \(error.localizedDescription)")
+            print("Error converting data source to CSV: \(error.localizedDescription)")
             return nil
         }
     }
@@ -140,7 +141,7 @@ class ExportableContainer<T: User>: Object, Codable {
             
             return result as? [UserDictionary]
         } catch {
-            print("ExportableDataSourceContainer - Error encoding all users as JSON array: \(error.localizedDescription)")
+            print("Error encoding all users as JSON array: \(error.localizedDescription)")
             return nil
         }
     }
@@ -153,14 +154,14 @@ class ExportableContainer<T: User>: Object, Codable {
         let documents: [URL] = FileManager.default.urls(for: FileManager.SearchPathDirectory.documentDirectory,
                                                         in: FileManager.SearchPathDomainMask.userDomainMask)
         
-        guard let fileURL = documents.first else {
-            print("ExportableDataSourceContainer - Error creating file URL")
+        guard let documentsURL = documents.first else {
+            print("Error creating documents URL")
             return nil
         }
         
         let pathComponent: String = "/\(fileName).\(fileExtension)"
         
-        let filePath: URL = fileURL.appendingPathComponent(pathComponent)
+        let filePath: URL = documentsURL.appendingPathComponent(pathComponent)
         
         return filePath
     }
@@ -171,7 +172,7 @@ class ExportableContainer<T: User>: Object, Codable {
     
     
     /// Parse and return users from an imported IOFilleType.userList file
-    internal static func importDataSource(at url: URL) -> [T]? {
+    static func importDataSource(at url: URL) -> [T]? {
         
         switch url.pathExtension {
         case IOFileType.userList.fileExtension:
@@ -183,18 +184,20 @@ class ExportableContainer<T: User>: Object, Codable {
     }
     
     private static func parseImportedUserListFile(at url: URL) -> [T]? {
+        var users: [T]?
         do {
             let importedDataSourceAsData = try Data(contentsOf: url)
-            let users = try JSONDecoder().decode([T].self, from: importedDataSourceAsData)
-            
-            try FileManager.default.removeItem(at: url)
-            
-            return users
+            users = try JSONDecoder().decode([T].self, from: importedDataSourceAsData)
             
         } catch let error {
             print(error.localizedDescription)
             return nil
         }
+        
+        try? FileManager.default.removeItem(at: url)
+        
+        return users
+        
     }
     
     private static func parseImportedUserCSVFile(at url: URL) -> [T]? {
