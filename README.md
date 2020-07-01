@@ -7,8 +7,8 @@ RealmShare is a demo app for showing how to share RealmSwift objects between two
 <br />
 <div id="images">
     <p align="center">
-    <img style="display: inline; margin: 0 5px;" src="images/export_pic_1.png" width=150 height=300 />
-    <img style="display: inline; margin: 0 5px;" src="images/import_pic_1.png" width=450 height=300 />
+    <img style="display: inline; margin: 0 5px;" src="images/export_img_1.png" width=150 height=300 />
+    <img style="display: inline; margin: 0 5px;" src="images/import_img_1.png" width=450 height=300 />
 </p>
 </div>
 
